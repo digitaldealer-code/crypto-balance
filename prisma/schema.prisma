@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Wallet {
+  id         String   @id @default(uuid())
+  label      String
+  address    String
+  type       String
+  isArchived Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  positionsAssets      PositionsAsset[]
+  positionsLiabilities PositionsLiability[]
+
+  @@unique([type, address])
+  @@map("wallets")
+}
+
+model Network {
+  id            String   @id @default(uuid())
+  chainType     String
+  chainKey      String   @unique
+  name          String
+  evmChainId    Int?
+  solanaCluster String?
+  rpcUrl        String
+  isEnabled     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("networks")
+}
+
+model Asset {
+  id            String   @id
+  chainKey      String
+  kind          String
+  addressOrMint String?
+  symbol        String?
+  name          String?
+  decimals      Int?
+  coingeckoId   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  positionsAssets      PositionsAsset[]
+  positionsLiabilities PositionsLiability[]
+  prices               SnapshotPrice[]
+
+  @@map("assets")
+}
+
+model Snapshot {
+  id            String   @id @default(uuid())
+  quoteCurrency String   @default("USD")
+  status        String
+  startedAt     DateTime @default(now())
+  finishedAt    DateTime?
+  notes         String?
+
+  sourceRuns           SnapshotSourceRun[]
+  positionsAssets      PositionsAsset[]
+  positionsLiabilities PositionsLiability[]
+  prices               SnapshotPrice[]
+  summary              SnapshotSummary?
+
+  @@map("snapshots")
+}
+
+model SnapshotSourceRun {
+  id           String   @id @default(uuid())
+  snapshotId   String
+  sourceKey    String
+  status       String
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  errorCode    String?
+  errorMessage String?
+  metaJson     String?
+
+  snapshot Snapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@unique([snapshotId, sourceKey])
+  @@map("snapshot_source_runs")
+}
+
+model PositionsAsset {
+  id              String  @id @default(uuid())
+  snapshotId      String
+  walletId        String
+  chainKey        String
+  protocol        String
+  sourceKey       String
+  assetId         String
+  quantityRaw     String
+  quantityDecimal String
+  isCollateral    Boolean?
+  priceQuote      String?
+  valueQuote      String?
+  metaJson        String?
+
+  snapshot Snapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  wallet   Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  asset    Asset    @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  @@index([snapshotId])
+  @@index([snapshotId, walletId])
+  @@index([snapshotId, chainKey])
+  @@index([snapshotId, protocol])
+  @@index([snapshotId, assetId])
+  @@map("positions_assets")
+}
+
+model PositionsLiability {
+  id            String  @id @default(uuid())
+  snapshotId    String
+  walletId      String
+  chainKey      String
+  protocol      String
+  sourceKey     String
+  debtAssetId   String
+  amountRaw     String
+  amountDecimal String
+  priceQuote    String?
+  valueQuote    String?
+  metaJson      String?
+
+  snapshot Snapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  wallet   Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  asset    Asset    @relation(fields: [debtAssetId], references: [id], onDelete: Restrict)
+
+  @@index([snapshotId])
+  @@index([snapshotId, walletId])
+  @@index([snapshotId, chainKey])
+  @@index([snapshotId, protocol])
+  @@index([snapshotId, debtAssetId])
+  @@map("positions_liabilities")
+}
+
+model SnapshotPrice {
+  id            String   @id @default(uuid())
+  snapshotId    String
+  assetId       String
+  quoteCurrency String
+  price         String
+  priceSource   String
+  fetchedAt     DateTime
+  metaJson      String?
+
+  snapshot Snapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  asset    Asset    @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  @@unique([snapshotId, assetId, quoteCurrency])
+  @@map("snapshot_prices")
+}
+
+model SnapshotSummary {
+  snapshotId             String @id
+  totalAssetsQuote       String
+  totalLiabilitiesQuote  String
+  netWorthQuote          String
+  pricedCoveragePct      Float
+  pricedAssetsCount      Int    @default(0)
+  totalAssetsCount       Int    @default(0)
+  pricedLiabilitiesCount Int    @default(0)
+  totalLiabilitiesCount  Int    @default(0)
+
+  snapshot Snapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@map("snapshot_summaries")
+}

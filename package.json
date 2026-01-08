@@ -1,0 +1,32 @@
+{
+  "name": "crypto-financials",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1 -p 3000",
+    "build": "next build",
+    "start": "next start -H 127.0.0.1 -p 3000",
+    "lint": "next lint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "seed:wallets": "node scripts/seed-wallets.mjs"
+  },
+  "dependencies": {
+    "@kamino-finance/klend-sdk": "^7.3.12",
+    "@prisma/client": "^5.22.0",
+    "@solana/web3.js": "^1.95.4",
+    "next": "14.2.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.10",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "prisma": "^5.22.0",
+    "typescript": "5.5.4"
+  }
+}
