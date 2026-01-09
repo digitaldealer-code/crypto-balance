@@ -7,7 +7,7 @@ import {
   SourceRunStatus,
   SOURCE_KEYS
 } from '@/lib/domain/constants';
-import { fetchCoingeckoPrices } from '@/lib/adapters/prices/coingecko';
+import { fetchCoingeckoPrices, fetchCoingeckoTokenPrices } from '@/lib/adapters/prices/coingecko';
 import { formatDecimal, parseDecimal } from '@/lib/normalization/decimal';
 import { AssetKind, LiabilityProtocol, PositionProtocol } from '@/lib/domain/constants';
 import { CANONICAL_COINGECKO_IDS, getAssetOverride } from '@/lib/domain/asset-overrides';
@@ -498,7 +498,7 @@ const runPrices = async (snapshotId: string, quoteCurrency: string) => {
         finishedAt: new Date(),
         errorCode: 'ERR_PRICES',
         errorMessage: message,
-        metaJson: toJson({ mocked: true })
+        metaJson: toJson({ mocked: env.useMockSources })
       }
     });
   }

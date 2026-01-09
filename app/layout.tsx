@@ -19,9 +19,7 @@ export default function RootLayout({
         <main>
           <header className="site-header">
             <div className="brand">
-              <span className="eyebrow">Local-only portfolio console</span>
               <h1>Crypto Balance Sheet</h1>
-              <span className="tagline">Balance sheet snapshots across chains.</span>
             </div>
             <div className="header-actions">
               <TopNav />

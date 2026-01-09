@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap');
 
 :root {
   color-scheme: light;
@@ -15,7 +15,7 @@
   --danger: #b91c1c;
   --focus: rgba(15, 92, 77, 0.35);
   --shadow: 0 18px 40px rgba(24, 21, 18, 0.12);
-  --font-body: "IBM Plex Sans", "Helvetica Neue", sans-serif;
+  --font-body: "Source Sans 3", "Helvetica Neue", sans-serif;
   --font-display: "DM Serif Display", "Times New Roman", serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
 }
@@ -28,9 +28,8 @@ body {
   margin: 0;
   font-family: var(--font-body);
   color: var(--text);
-  background: radial-gradient(circle at 15% 10%, #fff3dc 0%, transparent 50%),
-    radial-gradient(circle at 85% 20%, #f1f7f4 0%, transparent 45%),
-    linear-gradient(160deg, #f6f1e7 0%, #efe7da 100%);
+  background: radial-gradient(circle at 12% 8%, #fff2d8 0%, transparent 55%),
+    linear-gradient(180deg, #f7f2e9 0%, #efe7da 100%);
   background-attachment: fixed;
 }
 
@@ -47,7 +46,7 @@ main {
 
 .site-header {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 24px;
   margin-bottom: 32px;
@@ -210,7 +209,7 @@ p {
   justify-content: center;
   padding: 4px 12px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -255,33 +254,199 @@ p {
   overflow: hidden;
 }
 
-.stat::after {
-  content: "";
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: rgba(15, 92, 77, 0.08);
-}
-
 .stat span {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.2em;
   font-weight: 600;
+  position: relative;
+  padding-bottom: 8px;
+  display: inline-flex;
+  width: fit-content;
+}
+
+.stat span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 42px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(15, 92, 77, 0.5), rgba(15, 92, 77, 0));
 }
 
 .stat strong {
   font-size: 26px;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.overview-grid {
+  margin-top: 18px;
+}
+
+.overview-card {
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.overview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.overview-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.overview-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  font-weight: 600;
+  position: relative;
+  padding-bottom: 8px;
+  display: inline-flex;
+  width: fit-content;
+}
+
+.overview-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 42px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(15, 92, 77, 0.5), rgba(15, 92, 77, 0));
+}
+
+.overview-value {
+  font-size: 20px;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.overview-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.overview-subtitle {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.overview-level {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.overview-metric {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.overview-placeholder {
+  font-size: 18px;
+  color: var(--muted);
+  padding: 6px 0;
+}
+
+.overview-note {
+  font-size: 12px;
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.stacked-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #efe7da;
+}
+
+.stacked-segment {
+  height: 100%;
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.legend-metric {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.meter {
+  height: 10px;
+  border-radius: 999px;
+  background: #efe7da;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.badge.warning {
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .numeric {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
 button {
@@ -373,6 +538,14 @@ button:focus-visible {
   min-width: 680px;
 }
 
+.table-large td {
+  font-size: 16px;
+}
+
+.table-large th {
+  font-size: 14px;
+}
+
 .table th {
   text-align: left;
   font-size: 11px;
@@ -438,12 +611,12 @@ button:focus-visible {
   border-radius: 999px;
   background: var(--accent-soft);
   color: var(--accent);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .error {
   color: var(--warning);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .error-block {
@@ -453,7 +626,7 @@ button:focus-visible {
   background: rgba(180, 83, 9, 0.08);
   border: 1px solid rgba(180, 83, 9, 0.25);
   color: var(--warning);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -476,7 +649,7 @@ form {
 }
 
 .help {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
 }
 

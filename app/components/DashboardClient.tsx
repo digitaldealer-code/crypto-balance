@@ -1,6 +1,9 @@
 'use client';
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import PortfolioAllocationViz from '@/src/components/overview/PortfolioAllocationViz';
+import NetLtvViz from '@/src/components/overview/NetLtvViz';
+import GrossLeverageViz from '@/src/components/overview/GrossLeverageViz';
 
 type SnapshotSummary = {
   totalAssetsQuote: string;
@@ -105,6 +108,12 @@ const sumValue = (values: Array<string | null | undefined>) => {
     return Number.isFinite(parsed) ? sum + parsed : sum;
   }, 0);
   return total.toString();
+};
+
+const toNumber = (value?: string | null) => {
+  if (!value) return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 };
 
 const chainLabel = (chainKey: string) => {
@@ -303,6 +312,43 @@ export default function DashboardClient() {
     [displayCurrency, fxRate, summary?.quoteCurrency]
   );
 
+  const totals = useMemo(() => {
+    if (!summary?.summary) {
+      return { totalAssets: null, totalLiabilities: null, netWorth: null };
+    }
+    return {
+      totalAssets: toNumber(convertValue(summary.summary.totalAssetsQuote)),
+      totalLiabilities: toNumber(convertValue(summary.summary.totalLiabilitiesQuote)),
+      netWorth: toNumber(convertValue(summary.summary.netWorthQuote))
+    };
+  }, [convertValue, summary?.summary]);
+
+  const allocationByAsset = useMemo(() => {
+    if (assets.length === 0) return null;
+    const grouped = new Map<string, number>();
+    assets.forEach((asset) => {
+      const symbol = asset.asset?.symbol ?? asset.assetId;
+      const value = toNumber(convertValue(asset.valueQuote ?? undefined));
+      if (!value || value <= 0) return;
+      grouped.set(symbol, (grouped.get(symbol) ?? 0) + value);
+    });
+    return Array.from(grouped.entries()).map(([symbol, valueUsd]) => ({
+      symbol,
+      valueUsd
+    }));
+  }, [assets, convertValue]);
+
+  const allocationSum = useMemo(() => {
+    if (!allocationByAsset) return 0;
+    return allocationByAsset.reduce((sum, item) => sum + item.valueUsd, 0);
+  }, [allocationByAsset]);
+
+  const allocationWarning = useMemo(() => {
+    if (!allocationByAsset || !totals.totalAssets || totals.totalAssets <= 0) return false;
+    const delta = Math.abs(allocationSum - totals.totalAssets);
+    return delta / totals.totalAssets > 0.05;
+  }, [allocationByAsset, allocationSum, totals.totalAssets]);
+
   const coverage = useMemo(() => {
     if (!summary?.summary) return '--';
     return `${summary.summary.pricedCoveragePct.toFixed(1)}%`;
@@ -336,8 +382,21 @@ export default function DashboardClient() {
       }
     });
 
-    return Array.from(groups.values());
-  }, [assets]);
+    const toSortValue = (value?: string | null) => toNumber(convertValue(value)) ?? 0;
+
+    return Array.from(groups.values())
+      .map((group) => ({
+        ...group,
+        rows: [...group.rows].sort(
+          (left, right) => toSortValue(right.valueQuote) - toSortValue(left.valueQuote)
+        )
+      }))
+      .sort((left, right) => {
+        const leftTotal = toSortValue(sumValue(left.rows.map((row) => row.valueQuote)));
+        const rightTotal = toSortValue(sumValue(right.rows.map((row) => row.valueQuote)));
+        return rightTotal - leftTotal;
+      });
+  }, [assets, convertValue]);
 
   const groupedLiabilities = useMemo(() => {
     const groups = new Map<
@@ -362,8 +421,21 @@ export default function DashboardClient() {
       }
     });
 
-    return Array.from(groups.values());
-  }, [liabilities]);
+    const toSortValue = (value?: string | null) => toNumber(convertValue(value)) ?? 0;
+
+    return Array.from(groups.values())
+      .map((group) => ({
+        ...group,
+        rows: [...group.rows].sort(
+          (left, right) => toSortValue(right.valueQuote) - toSortValue(left.valueQuote)
+        )
+      }))
+      .sort((left, right) => {
+        const leftTotal = toSortValue(sumValue(left.rows.map((row) => row.valueQuote)));
+        const rightTotal = toSortValue(sumValue(right.rows.map((row) => row.valueQuote)));
+        return rightTotal - leftTotal;
+      });
+  }, [convertValue, liabilities]);
 
   const toggleAssetGroup = (key: string) => {
     setExpandedAssets((prev) => {
@@ -454,6 +526,24 @@ export default function DashboardClient() {
             </strong>
           </div>
         </div>
+        <div className="grid grid-3 overview-grid">
+          <PortfolioAllocationViz
+            totalAssetsUsd={totals.totalAssets}
+            allocation={allocationByAsset}
+            currency={displayCurrency}
+            showWarning={allocationWarning}
+          />
+          <NetLtvViz
+            debtValueUsd={totals.totalLiabilities}
+            collateralValueUsd={totals.totalAssets}
+            currency={displayCurrency}
+          />
+          <GrossLeverageViz
+            totalAssetsUsd={totals.totalAssets}
+            netWorthUsd={totals.netWorth}
+            currency={displayCurrency}
+          />
+        </div>
       </section>
 
       <section className="panel">
@@ -462,7 +552,7 @@ export default function DashboardClient() {
           <p style={{ color: 'var(--muted)' }}>No assets yet.</p>
         ) : (
           <div className="table-wrap">
-            <table className="table align-right">
+            <table className="table table-large align-right">
               <colgroup>
                 <col style={{ width: '28%' }} />
                 <col style={{ width: '14%' }} />
@@ -579,7 +669,7 @@ export default function DashboardClient() {
           <p style={{ color: 'var(--muted)' }}>No liabilities yet.</p>
         ) : (
           <div className="table-wrap">
-            <table className="table align-right">
+            <table className="table table-large align-right">
               <colgroup>
                 <col style={{ width: '28%' }} />
                 <col style={{ width: '14%' }} />
